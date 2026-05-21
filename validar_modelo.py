@@ -32,7 +32,7 @@ def evaluar_foto(ruta_imagen):
     # Preprocesamos la foto
     input_data = preprocesar_imagen(ruta_imagen)
     if input_data is None:
-        return
+        return None, None
     
     # Iniciamos el motor de ONNX
     sesion = ort.InferenceSession(RUTA_MODELO)
@@ -52,14 +52,18 @@ def evaluar_foto(ruta_imagen):
     if score < 0.5: 
         # Si está más cerca de 0
         confianza = (1.0 - score) * 100
+        es_montana = True
         print(f"✅ ¡ES UNA MONTAÑA!")
         print(f"📊 Nivel de certeza: {confianza:.2f}%")
     else:
         # Si está más cerca de 1
         confianza = score * 100
+        es_montana = False
         print(f"❌ NO ES UNA MONTAÑA")
         print(f"📊 Nivel de certeza: {confianza:.2f}%")
     print("-" * 50)
+    
+    return es_montana, confianza
 
 # ==========================================
 # ZONA DE PRUEBAS

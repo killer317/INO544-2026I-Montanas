@@ -69,11 +69,10 @@ def evaluar_foto(ruta_imagen):
 # ZONA DE PRUEBAS
 # ==========================================
 if __name__ == "__main__":
-    if not os.path.exists(RUTA_MODELO):
-        print(f"⚠️ No se encontró '{RUTA_MODELO}'. Ejecuta el entrenamiento primero.")
+    # Ejemplo de prueba manual al ejecutar el script directamente
+    foto_prueba = "prueba_montana.jpg"
+    if os.path.exists(foto_prueba):
+        es_montana, confianza = evaluar_foto(foto_prueba)
+        print(f"Resultado final: {es_montana} ({confianza}%)")
     else:
-        # Pon el nombre de las fotos que quieras probar aquí abajo:
-        evaluar_foto("arbol_000.jpg") 
-        evaluar_foto("plastic_1.jpg")
-        evaluar_foto("coche rojo.avif")
-        evaluar_foto("montana12.jpg")
+        print("Coloca una imagen llamada 'prueba_montana.jpg' para probar el script.")

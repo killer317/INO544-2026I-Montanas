@@ -3,154 +3,220 @@ from tkinter import filedialog
 import customtkinter as ctk
 from PIL import Image
 
-# Importamos tu función del modelo
+# Importamos tu función del modelo (Asegúrate de que validar_modelo.py esté en la misma carpeta)
 from validar_modelo import evaluar_foto
 
-# ── CONFIGURACIÓN DE TEMA ──
-ctk.set_appearance_mode("Dark")  # Forzamos modo oscuro para un look más "hacker/profesional"
+# ── CONFIGURACIÓN DEL TEMA ──
+ctk.set_appearance_mode("Light") 
 ctk.set_default_color_theme("blue")
 
-class App(ctk.CTk):
+class AppModerna(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("Ves lo que veo 👁️🤖 - Clasificador CNN")
-        self.geometry("650x700")
+        self.title("Identificador de Montañas IA")
+        self.geometry("1100x700") # Un poco más ancho para imitar la pantalla de la tablet
         self.resizable(False, False)
+        
+        # Fondo de la aplicación (Color azul muy clarito casi blanco, simulando el entorno)
+        self.configure(fg_color="#E8F1F9") 
 
-        self.ruta = ""
+        self.ruta_actual = ""
         self.ctk_image = None
-        self._build_ui()
-
-    def _build_ui(self):
-        # ── TÍTULO ──
-        titulo = ctk.CTkLabel(self, text="Clasificador de Montañas con IA", font=("Segoe UI", 24, "bold"))
-        titulo.pack(pady=(20, 5))
         
-        subtitulo = ctk.CTkLabel(self, text="Proyecto Feria I-2026 • Red Neuronal Convolucional", font=("Segoe UI", 12), text_color="gray")
-        subtitulo.pack(pady=(0, 20))
+        # Configurar el grid principal
+        # Fila 0: Cabecera (Título y Botones)
+        # Fila 1: Paneles (Izquierdo y Derecho)
+        self.grid_rowconfigure(0, weight=0)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=0)
+        self.grid_columnconfigure(1, weight=1)
 
-        # ── BOTONES RÁPIDOS DE DEMOSTRACIÓN (Para la feria) ──
-        demo_frame = ctk.CTkFrame(self, fg_color="transparent")
-        demo_frame.pack(fill="x", padx=20, pady=(0, 15))
+        self._build_header()
+        self._build_sidebar()
+        self._build_main_area()
+
+    def _build_header(self):
+        # ── CABECERA SUPERIOR ──
+        header_frame = ctk.CTkFrame(self, fg_color="transparent")
+        header_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=30, pady=(20, 10))
+
+        # Título
+        titulo_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        titulo_frame.pack(side="left")
         
-        ctk.CTkButton(demo_frame, text="⛰️ Cargar Ejemplo Montaña", fg_color="#27ae60", hover_color="#219150", 
-                      command=lambda: self.cargar_ejemplo("prueba_montana.jpg")).pack(side="left", expand=True, padx=5)
-                      
-        ctk.CTkButton(demo_frame, text="🏙️ Cargar Ejemplo No Montaña", fg_color="#c0392b", hover_color="#a53125",
-                      command=lambda: self.cargar_ejemplo("prueba_ciudad.jpg")).pack(side="right", expand=True, padx=5)
+        ctk.CTkLabel(titulo_frame, text="🏔️", font=("Segoe UI", 28)).pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(titulo_frame, text="IDENTIFICADOR DE MONTAÑAS IA", 
+                     font=("Segoe UI", 22, "bold"), text_color="#0F2B5B").pack(side="left")
 
-        # ── SELECTOR DE ARCHIVO MANUAL ──
-        file_frame = ctk.CTkFrame(self)
-        file_frame.pack(fill="x", padx=20, pady=5)
+        # Botones superiores
+        botones_frame = ctk.CTkFrame(header_frame, fg_color="transparent")
+        botones_frame.pack(side="right")
 
-        self.ruta_entry = ctk.CTkEntry(file_frame, placeholder_text="O selecciona una imagen manual...", font=("Segoe UI", 12))
-        self.ruta_entry.pack(side="left", fill="x", expand=True, padx=(10, 10), pady=10)
+        btn_examinar = ctk.CTkButton(botones_frame, text="📁 Examinar Archivos", font=("Segoe UI", 14, "bold"),
+                                     fg_color="#FFFFFF", text_color="#0F2B5B", hover_color="#F3F4F6", 
+                                     corner_radius=10, height=45, command=self.seleccionar_archivo)
+        btn_examinar.pack(side="left", padx=(0, 15))
+
+        self.btn_analizar = ctk.CTkButton(botones_frame, text="Analizar Imagen", font=("Segoe UI", 14, "bold"),
+                                          fg_color="#3B82F6", hover_color="#1D4ED8", 
+                                          corner_radius=10, height=45, command=self.evaluar)
+        self.btn_analizar.pack(side="left")
+
+
+    def _build_sidebar(self):
+        # ── PANEL IZQUIERDO (Tarjeta Flotante Blanca) ──
+        self.sidebar_frame = ctk.CTkFrame(self, width=320, corner_radius=20, fg_color="#FFFFFF")
+        self.sidebar_frame.grid(row=1, column=0, sticky="nsew", padx=(30, 15), pady=(10, 30))
+        self.sidebar_frame.grid_propagate(False)
+
+        # Título del panel
+        ctk.CTkLabel(self.sidebar_frame, text="Administrador de Imágenes", 
+                     font=("Segoe UI", 18, "bold"), text_color="#0F2B5B").pack(pady=(25, 15), padx=20, anchor="w")
+
+        # Barra de búsqueda simulada
+        self.search_entry = ctk.CTkEntry(self.sidebar_frame, placeholder_text="🔍 Buscar imagen local...", 
+                                         height=40, corner_radius=10, fg_color="#F0F4F8", border_width=0,
+                                         text_color="#4B5563")
+        self.search_entry.pack(padx=20, pady=(0, 20), fill="x")
+
+        # Área de galería (Simulada con un frame escroleable y botones grilla)
+        self.scroll_gallery = ctk.CTkScrollableFrame(self.sidebar_frame, fg_color="transparent")
+        self.scroll_gallery.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         
-        ctk.CTkButton(file_frame, text="Examinar", width=100, command=self.seleccionar_archivo).pack(side="right", padx=(0, 10))
-
-        # ── ÁREA DE VISTA PREVIA (PREVIEW) ──
-        self.preview_frame = ctk.CTkFrame(self, height=320)
-        self.preview_frame.pack(fill="both", expand=True, padx=20, pady=15)
-        self.preview_frame.pack_propagate(False) # Evita que el frame colapse si no hay imagen
-
-        self.thumb_label = ctk.CTkLabel(self.preview_frame, text="Esperando imagen...", font=("Segoe UI", 14), text_color="gray")
-        self.thumb_label.pack(expand=True)
-
-        # ── BOTÓN DE EVALUACIÓN ──
-        self.btn_evaluar = ctk.CTkButton(self, text="🧠 Analizar con Red Neuronal", command=self.evaluar, 
-                                         height=45, font=("Segoe UI", 16, "bold"))
-        self.btn_evaluar.pack(padx=20, pady=(5, 15), fill="x")
-
-        # ── ÁREA DE RESULTADOS Y BARRA DE PROGRESO ──
-        self.result_label = ctk.CTkLabel(self, text="", font=("Segoe UI", 20, "bold"))
-        self.result_label.pack(pady=(0, 5))
-
-        self.progress_bar = ctk.CTkProgressBar(self, width=500, height=20, corner_radius=10)
-        self.progress_bar.set(0) # Inicia vacía
-        self.progress_bar.pack(pady=(0, 5))
+        # Crear una pequeña grilla visual falsa para que se parezca al diseño
+        self.scroll_gallery.grid_columnconfigure((0,1,2), weight=1)
+        iconos = ["📄", "📄", "🏔️", "🏔️", "🏔️", "🏔️", "🏔️", "🏔️", "🏔️", "📄", "📄", "📂", "📂", "📂"]
         
-        self.porcentaje_label = ctk.CTkLabel(self, text="", font=("Segoe UI", 14))
-        self.porcentaje_label.pack(pady=(0, 20))
+        for i, icono in enumerate(iconos):
+            row = i // 3
+            col = i % 3
+            # Tarjetitas de la galería
+            card = ctk.CTkFrame(self.scroll_gallery, width=70, height=70, corner_radius=12, fg_color="#F0F4F8" if icono != "🏔️" else "#D1E2FA")
+            card.grid(row=row, column=col, padx=8, pady=8)
+            card.pack_propagate(False)
+            ctk.CTkLabel(card, text=icono, font=("Segoe UI", 24)).pack(expand=True)
 
+
+    def _build_main_area(self):
+        # ── PANEL DERECHO (Contenedor de tarjetas de imagen y resultados) ──
+        self.right_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.right_container.grid(row=1, column=1, sticky="nsew", padx=(15, 30), pady=(10, 30))
+
+        # -- Tarjeta de Vista Previa (Azul claro) --
+        self.preview_card = ctk.CTkFrame(self.right_container, fg_color="#407CE8", corner_radius=20)
+        self.preview_card.pack(fill="both", expand=True, pady=(0, 20))
+
+        ctk.CTkLabel(self.preview_card, text="Imagen Cargada", font=("Segoe UI", 16, "bold"), text_color="#FFFFFF").pack(anchor="w", padx=25, pady=(15, 10))
+
+        # Contenedor de la imagen con el borde neón cyan
+        self.image_border_frame = ctk.CTkFrame(self.preview_card, fg_color="#1E1E1E", corner_radius=15, 
+                                               border_width=3, border_color="#00E5FF")
+        self.image_border_frame.pack(expand=True, fill="both", padx=25, pady=(0, 25))
+        
+        self.thumb_label = ctk.CTkLabel(self.image_border_frame, text="Ninguna imagen seleccionada", text_color="gray", corner_radius=15)
+        self.thumb_label.pack(expand=True, fill="both", padx=2, pady=2)
+
+        # -- Tarjeta de Resultados (Azul muy oscuro) --
+        self.result_box = ctk.CTkFrame(self.right_container, fg_color="#091636", corner_radius=20, height=140)
+        self.result_box.pack(fill="x")
+        self.result_box.pack_propagate(False)
+
+        # Textos superiores del cuadro oscuro
+        text_frame = ctk.CTkFrame(self.result_box, fg_color="transparent")
+        text_frame.pack(fill="x", padx=25, pady=(20, 5))
+        
+        ctk.CTkLabel(text_frame, text="RESULTADOS DEL ANÁLISIS", font=("Segoe UI", 12, "bold"), text_color="#A3B8D7").pack(side="left")
+        self.lbl_probabilidad = ctk.CTkLabel(text_frame, text="PROBABILIDAD: --%", font=("Segoe UI", 16, "bold"), text_color="#FFFFFF")
+        self.lbl_probabilidad.pack(side="right")
+
+        # Barra de progreso (Fondo oscuro, borde cyan, relleno azul)
+        self.progress_bar = ctk.CTkProgressBar(self.result_box, height=28, corner_radius=14, 
+                                               fg_color="#091636", border_width=2, border_color="#00E5FF",
+                                               progress_color="#3B82F6")
+        self.progress_bar.set(0)
+        self.progress_bar.pack(fill="x", padx=25, pady=(10, 5))
+
+        # Textos inferiores de la barra
+        labels_frame = ctk.CTkFrame(self.result_box, fg_color="transparent")
+        labels_frame.pack(fill="x", padx=30)
+        
+        self.lbl_resultado_izq = ctk.CTkLabel(labels_frame, text="NO ES MONTAÑA", font=("Segoe UI", 13, "bold"), text_color="#FFFFFF")
+        self.lbl_resultado_izq.pack(side="left")
+        
+        self.lbl_resultado_final = ctk.CTkLabel(labels_frame, text="ES MONTAÑA", font=("Segoe UI", 14, "bold"), text_color="#00E5FF")
+        self.lbl_resultado_final.pack(side="right")
+
+
+    # ── LÓGICA DE LA APLICACIÓN ──
     def seleccionar_archivo(self):
         ruta = filedialog.askopenfilename(
             title="Seleccionar imagen",
             filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.gif")])
         if ruta:
-            self.procesar_nueva_ruta(ruta)
-
-    def cargar_ejemplo(self, nombre_archivo):
-        # Esta función busca la foto en la misma carpeta del script
-        ruta = os.path.join(os.path.dirname(os.path.abspath(__file__)), nombre_archivo)
-        if not os.path.exists(ruta):
-            self.result_label.configure(text=f"No se encontró '{nombre_archivo}'", text_color="orange")
-            return
-        self.procesar_nueva_ruta(ruta)
-
-    def procesar_nueva_ruta(self, ruta):
-        self.ruta = ruta
-        self.ruta_entry.delete(0, "end")
-        self.ruta_entry.insert(0, ruta)
-        self._mostrar_preview(ruta)
-        # Limpiar resultados anteriores
-        self.result_label.configure(text="")
-        self.porcentaje_label.configure(text="")
-        self.progress_bar.set(0)
+            self.ruta_actual = ruta
+            self._mostrar_preview(ruta)
+            # Resetear UI
+            self.progress_bar.set(0)
+            self.lbl_probabilidad.configure(text="PROBABILIDAD: --%", text_color="#FFFFFF")
+            self.lbl_resultado_final.configure(text_color="#00E5FF") # Cyan por defecto
+            self.image_border_frame.configure(border_color="#00E5FF") # Borde neón por defecto
 
     def _mostrar_preview(self, ruta):
         img = Image.open(ruta)
-        # Redimensionar manteniendo proporciones para el UI
-        img.thumbnail((500, 300), Image.Resampling.LANCZOS)
+        # Redimensionamos para que quepa bien en el nuevo contenedor
+        img.thumbnail((700, 400), Image.Resampling.LANCZOS) 
         self.ctk_image = ctk.CTkImage(light_image=img, dark_image=img, size=img.size)
         self.thumb_label.configure(image=self.ctk_image, text="")
 
     def evaluar(self):
-        if not self.ruta:
-            self.result_label.configure(text="⚠️ Selecciona una imagen primero.", text_color="orange")
+        if not self.ruta_actual:
+            self.lbl_probabilidad.configure(text="SELECCIONE UNA IMAGEN", text_color="#EF4444")
             return
 
-        self.btn_evaluar.configure(state="disabled", text="Analizando...")
-        self.update() # Forzar actualización gráfica
+        self.btn_analizar.configure(state="disabled", text="Analizando...")
+        self.update()
 
-        # Llamamos a tu modelo
-        es_montana, confianza = evaluar_foto(self.ruta)
+        # Llamamos al modelo
+        es_montana, confianza = evaluar_foto(self.ruta_actual)
         
-        self.btn_evaluar.configure(state="normal", text="🧠 Analizar con Red Neuronal")
+        self.btn_analizar.configure(state="normal", text="Analizar Imagen")
 
         if es_montana is None:
-            self.result_label.configure(text="❌ Error al procesar la imagen.", text_color="red")
+            self.lbl_probabilidad.configure(text="ERROR EN ARCHIVO", text_color="#EF4444")
             return
 
-        # ==========================================
-        # AQUÍ AGREGAMOS EL PORCENTAJE AL INSTANTE
-        # ==========================================
-        if es_montana:
-            texto = f"🏔️ ¡ES UNA MONTAÑA! ({confianza:.1f}%)"
-            color = "#2ecc71" # Verde
-        else:
-            texto = f"🚫 NO ES UNA MONTAÑA ({confianza:.1f}%)"
-            color = "#e74c3c" # Rojo
-
-        # Mostramos el resultado con el número inmediatamente
-        self.result_label.configure(text=texto, text_color=color)
-        self.porcentaje_label.configure(text="") # Ocultamos el texto pequeño de abajo
-        self.progress_bar.configure(progress_color=color)
+        # 1. Ajustes según el resultado
+        color_neon = "#00E5FF" if es_montana else "#FF3366" # Cyan brillante (Montaña) o Rosa/Rojo neón (No Montaña)
+        texto_prefijo = "PROBABILIDAD MONTAÑA" if es_montana else "PROBABILIDAD NO MONTAÑA"
         
-        # Iniciar animación solo para que la barra se llene visualmente
-        target_value = confianza / 100.0
-        self.animar_barra(target_value, 0.0)
+        # Ajustamos el color del borde de la imagen, barra y texto inferior para que haga "juego"
+        self.progress_bar.configure(border_color=color_neon)
+        self.image_border_frame.configure(border_color=color_neon)
+        self.lbl_resultado_final.configure(text_color=color_neon)
 
-    def animar_barra(self, target, current):
-        """Genera una animación fluida llenando solo la barra de progreso"""
-        step = 0.05 # Velocidad de la animación
+        # 2. Calculamos el porcentaje real para mostrar (Para que la barra siempre crezca)
+        porcentaje_mostrar = confianza if confianza >= 50 else (100.0 - confianza)
+        target_value = porcentaje_mostrar / 100.0
+        
+        self.progress_bar.set(0)
+        self.animar_barra(target_value, 0.0, porcentaje_mostrar, texto_prefijo)
+
+    def animar_barra(self, target, current, porcentaje_final, prefijo_texto):
+        step = 0.03
         if current < target:
             current += step
-            if current > target: # Evitar pasarse del valor real
+            if current > target:
                 current = target
+                
             self.progress_bar.set(current)
-            self.after(20, self.animar_barra, target, current) # Llama de nuevo en 20ms
+            porcentaje_actual = current * 100
+            
+            self.lbl_probabilidad.configure(text=f"{prefijo_texto}: {porcentaje_actual:.1f}%")
+            self.after(15, self.animar_barra, target, current, porcentaje_final, prefijo_texto)
         else:
             self.progress_bar.set(target)
+            self.lbl_probabilidad.configure(text=f"{prefijo_texto}: {porcentaje_final:.1f}%")
+
 if __name__ == "__main__":
-    App().mainloop()
+    AppModerna().mainloop()

@@ -160,6 +160,8 @@ class AppModerna(ctk.CTk):
             self.progress_bar.set(0)
             self.lbl_probabilidad.configure(text="PROBABILIDAD: --%", text_color="#FFFFFF")
             self.lbl_resultado_final.configure(text_color="#00E5FF") # Cyan por defecto
+            self.lbl_resultado_izq.configure(text_color="#FFFFFF") # Blanco por defecto
+            self.progress_bar.configure(border_color="#00E5FF", progress_color="#3B82F6") # Resetear colores de barra
             self.image_border_frame.configure(border_color="#00E5FF") # Borde neón por defecto
 
     def _mostrar_preview(self, ruta):
@@ -192,8 +194,16 @@ class AppModerna(ctk.CTk):
         
         # Ajustamos el color del borde de la imagen, barra y texto inferior para que haga "juego"
         self.progress_bar.configure(border_color=color_neon)
+        self.progress_bar.configure(progress_color=color_neon) # Hacemos que el relleno de la barra también haga juego
         self.image_border_frame.configure(border_color=color_neon)
-        self.lbl_resultado_final.configure(text_color=color_neon)
+        
+        # Iluminamos la etiqueta correcta según el resultado
+        if es_montana:
+            self.lbl_resultado_final.configure(text_color=color_neon)
+            self.lbl_resultado_izq.configure(text_color="#FFFFFF")
+        else:
+            self.lbl_resultado_final.configure(text_color="#FFFFFF")
+            self.lbl_resultado_izq.configure(text_color=color_neon)
 
         # 2. Calculamos el porcentaje real para mostrar (Para que la barra siempre crezca)
         porcentaje_mostrar = confianza if confianza >= 50 else (100.0 - confianza)

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { Upload, Cpu, Monitor, Terminal as TerminalIcon, Image as ImageIcon, Zap, Camera, XSquare } from 'lucide-react'
-import Webcam from 'react-webcam' // <-- Importación nueva
+import Webcam from 'react-webcam'
 
 // Estilos globales integrados para asegurar compilación
 const globalStyles = `
@@ -23,7 +23,7 @@ export default function App() {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [progress, setProgress] = useState(0);
   
-  // -- NUEVOS ESTADOS PARA CÁMARA --
+  // -- ESTADOS PARA CÁMARA --
   const [isCameraActive, setIsCameraActive] = useState(false);
   const webcamRef = useRef(null);
 
@@ -72,37 +72,35 @@ export default function App() {
     }
   };
 
-  const capturePhoto = useCallback(() => {
-    const imageSrc64 = webcamRef.current.getScreenshot();
-    if (imageSrc64) {
-      // Convertir la captura a un archivo (File) para mandarlo a Python
-      fetch(imageSrc64)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], "scan_target.jpg", { type: "image/jpeg" });
-          setImageFile(file);
-          setImageSrc(imageSrc64);
-          setIsCameraActive(false); // Congelar imagen apagando la cámara
-          setStatus("TARGET FIJADO");
-          setLogs(prev => [...prev, "[SISTEMA] Target fijado y guardado en memoria."]);
-        });
-    }
-  }, [webcamRef]);
-
-  // -- LÓGICA DE EVALUACIÓN --
+  // -- LÓGICA DE EVALUACIÓN CORREGIDA --
   const handleEvaluate = async () => {
-    // Si la cámara está activa, primero tomamos la foto
+    let archivoParaEnviar = imageFile; // Por defecto usa el archivo cargado manualmente
+
+    // 1. Si la cámara está activa, tomamos la foto secuencialmente
     if (isCameraActive) {
-      capturePhoto();
-      // Le damos un pequeño retraso para que el state se actualice antes de enviar a Python
-      setTimeout(() => performAnalysis(), 300); 
-    } else {
-      performAnalysis();
+      setStatus("CAPTURANDO TARGET...");
+      const imageSrc64 = webcamRef.current.getScreenshot();
+
+      if (imageSrc64) {
+        // Forzamos la espera para crear el archivo físico antes de seguir
+        const res = await fetch(imageSrc64);
+        const blob = await res.blob();
+        archivoParaEnviar = new File([blob], "scan_target.jpg", { type: "image/jpeg" });
+
+        // Actualizamos UI visual (esto corre en paralelo, ya no bloquea el envío)
+        setImageFile(archivoParaEnviar);
+        setImageSrc(imageSrc64);
+        setIsCameraActive(false); // Congelar imagen apagando la cámara
+        setLogs(prev => [...prev, "[SISTEMA] Target fijado y guardado en memoria temporal."]);
+      }
     }
+
+    // 2. Enviamos el archivo asegurado a la función de análisis
+    await performAnalysis(archivoParaEnviar);
   };
 
-  const performAnalysis = async () => {
-    if (!imageFile && !isCameraActive) {
+  const performAnalysis = async (archivoTarget) => {
+    if (!archivoTarget) {
       setLogs(prev => [...prev, "[ERROR] No hay señal de imagen para procesar."]);
       return;
     }
@@ -118,7 +116,8 @@ export default function App() {
 
     try {
       const formData = new FormData();
-      formData.append("image", imageFile); 
+      // Usamos el parámetro que viene asegurado desde handleEvaluate
+      formData.append("image", archivoTarget); 
 
       // Petición al backend
       const response = await fetch("http://localhost:5000/api/evaluate", {
@@ -178,7 +177,7 @@ export default function App() {
               <span>Cargar Imagen</span>
             </button>
 
-            {/* NUEVO BOTÓN DE CÁMARA */}
+            {/* BOTÓN DE CÁMARA */}
             <button 
               onClick={toggleCamera}
               disabled={isEvaluating}
@@ -287,11 +286,24 @@ export default function App() {
               <TerminalIcon className="w-4 h-4" />
               <span className="text-xs tracking-wider">TERMINAL DE SALIDA</span>
             </div>
-            {logs.map((log, index) => (
-              <div key={index} className={`${log.includes('[ERROR]') ? 'text-red-400' : log.includes('[RESULTADO]') ? 'text-green-400 font-bold' : 'text-cyan-500'} break-words`}>
-                <span className="text-cyan-800 opacity-50 mr-2">{'>'}</span> {log}
-              </div>
-            ))}
+            
+            {logs.map((log, index) => {
+              // Lógica inteligente para definir el color del texto en la consola
+              let colorClass = "text-cyan-500"; // Color por defecto (azul sci-fi)
+              
+              if (log.includes('[ERROR]') || log.includes('NO ES MONTAÑA')) {
+                colorClass = "text-red-500 font-bold drop-shadow-[0_0_5px_rgba(239,68,68,0.8)]"; // Rojo brillante para negativos o errores
+              } else if (log.includes('[RESULTADO]')) {
+                colorClass = "text-green-400 font-bold drop-shadow-[0_0_5px_rgba(74,222,128,0.8)]"; // Verde brillante para positivos (es montaña)
+              }
+
+              return (
+                <div key={index} className={`${colorClass} break-words transition-colors mt-1`}>
+                  <span className="text-cyan-800 opacity-50 mr-2">{'>'}</span> {log}
+                </div>
+              );
+            })}
+            
             <div ref={logsEndRef} />
           </div>
         </main>

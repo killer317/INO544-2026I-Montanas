@@ -49,11 +49,8 @@
     * *Tamaño de lote (Batch Size):* 32
 
 ### 💡 Justificación Crítica (Control de Autoría)
-*Explique detalladamente por qué el equipo eligió esa Tasa de Aprendizaje (Learning Rate) específica y el impacto que tuvo en las gráficas de pérdida durante el laboratorio:*
-> ### 💡 Justificación Crítica (Control de Autoría)
-*Explique detalladamente por qué el equipo eligió esa Tasa de Aprendizaje (Learning Rate) específica y el impacto que tuvo en las gráficas de pérdida durante el laboratorio:*
 
- Durante las pruebas iniciales en el laboratorio, estuvimos ajustando varios valores para evaluar cómo reaccionaba el modelo. Primero intentamos forzar un aprendizaje rápido con una tasa de "0.01", pero al observar la gráfica de pérdida, vimos que la curva rebotaba de forma errática; el modelo era demasiado agresivo, "saltaba" por encima de los mínimos y no lograba estabilizarse.
+ Durante las pruebas iniciales, estuvimos ajustando varios valores para evaluar cómo reaccionaba el modelo. Primero intentamos forzar un aprendizaje rápido con una tasa de "0.01", pero al observar la gráfica de pérdida, vimos que la curva rebotaba de forma errática; el modelo era demasiado agresivo, "saltaba" por encima de los mínimos y no lograba estabilizarse.
  
  Por otro lado, cuando probamos bajarla demasiado (a "0.0001"), la curva era muy estable, pero el aprendizaje se volvía desesperantemente lento y la red apenas mejoraba tras cada época, lo que no era viable para nuestros tiempos de prueba.
  
@@ -68,7 +65,20 @@
 *(Inserte aquí abajo la captura de pantalla de la gráfica de entrenamiento Accuracy/Loss de su modelo)*
 ![Gráfica de Entrenamiento](src/grafica_rendimiento.png)
 
----
+PRUEBA DE EL MODELO EN LA TERMINAL 
+---<img width="1043" height="329" alt="pruebas en terminal" src="https://github.com/user-attachments/assets/85a9fbc3-9b59-4bcc-a326-e87418aa4bed" />
+PRIMER MODELO DE LA INTERFAZ 1.0V "ES UNA MONTAÑA" USANDO CUSTOMTKINTER
+<img width="1099" height="725" alt="modelo primera fase montaña" src="https://github.com/user-attachments/assets/ef6268ed-f1f6-4676-85e5-30be887b6107" />
+PRIMER MODELO DE LA INTERFAZ 1.0V "NO ES UNA MONTAÑA" USANDO CUSTOMTKINTER
+<img width="1094" height="727" alt="modelo primera fase no montaña" src="https://github.com/user-attachments/assets/10e854e3-cb54-4f03-a733-05a9bba1970e" />
+MODELO FINAL DE LA INTERFAZ 2.0V "ES UNA MONTAÑA" USANDO REACT
+<img width="1895" height="902" alt="montaña" src="https://github.com/user-attachments/assets/c1861117-a5b3-43d8-af6e-aea0ed588084" />
+MODELO FINAL DE LA INTERFAZ 2.0V "NO ES UNA MONTAÑA" USANDO REACT
+<img width="1895" height="897" alt="no montaña" src="https://github.com/user-attachments/assets/c3a5d0f1-ec11-401e-aa68-31f14214e550" />
+IMPLEMANTACIÓN DE LA CAMARA FUNCIONAL PARA LA INTERFAZ 2.0V USANDO REACT
+<img width="1907" height="923" alt="Screenshot_3" src="https://github.com/user-attachments/assets/b2546abb-c125-43f4-b438-eeaf39d20276" />
+
+
 
 ## ⚙️ 5. Especificación de Exportación ONNX
 El modelo se ha homologado bajo los estándares requeridos por la interfaz centralizada:

@@ -1,6 +1,6 @@
-// ... existing code ...
-import React, { useState, useRef, useEffect } from 'react'
-import { Upload, Cpu, Monitor, Terminal as TerminalIcon, Image as ImageIcon, Zap } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { Upload, Cpu, Monitor, Terminal as TerminalIcon, Image as ImageIcon, Zap, Camera, XSquare } from 'lucide-react'
+import Webcam from 'react-webcam' // <-- Importación nueva
 
 // Estilos globales integrados para asegurar compilación
 const globalStyles = `
@@ -22,6 +22,11 @@ export default function App() {
   const [status, setStatus] = useState("ESPERANDO SEÑAL");
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [progress, setProgress] = useState(0);
+  
+  // -- NUEVOS ESTADOS PARA CÁMARA --
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const webcamRef = useRef(null);
+
   const [logs, setLogs] = useState([
     "[SISTEMA] Interfaz React unificada inicializada.",
     "[SISTEMA] Motor de evaluación preparado..."
@@ -34,12 +39,14 @@ export default function App() {
     logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs]);
 
+  // -- LÓGICA DE CARGA DE ARCHIVOS --
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       const url = URL.createObjectURL(file);
       setImageSrc(url);
       setImageFile(file);
+      setIsCameraActive(false); // Apagar cámara si se sube archivo
       setStatus("IMAGEN CARGADA");
       setProgress(0);
       setLogs(prev => [...prev, `[SISTEMA] Archivo cargado en memoria: ${file.name}`]);
@@ -50,8 +57,52 @@ export default function App() {
     fileInputRef.current.click();
   };
 
+  // -- LÓGICA DE CÁMARA --
+  const toggleCamera = () => {
+    if (isCameraActive) {
+      setIsCameraActive(false);
+      setStatus("CÁMARA DESACTIVADA");
+      setLogs(prev => [...prev, "[HARDWARE] Feed de video interrumpido."]);
+    } else {
+      setIsCameraActive(true);
+      setImageSrc(null);
+      setImageFile(null);
+      setStatus("FEED EN VIVO");
+      setLogs(prev => [...prev, "[HARDWARE] Inicializando escáner óptico..."]);
+    }
+  };
+
+  const capturePhoto = useCallback(() => {
+    const imageSrc64 = webcamRef.current.getScreenshot();
+    if (imageSrc64) {
+      // Convertir la captura a un archivo (File) para mandarlo a Python
+      fetch(imageSrc64)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], "scan_target.jpg", { type: "image/jpeg" });
+          setImageFile(file);
+          setImageSrc(imageSrc64);
+          setIsCameraActive(false); // Congelar imagen apagando la cámara
+          setStatus("TARGET FIJADO");
+          setLogs(prev => [...prev, "[SISTEMA] Target fijado y guardado en memoria."]);
+        });
+    }
+  }, [webcamRef]);
+
+  // -- LÓGICA DE EVALUACIÓN --
   const handleEvaluate = async () => {
-    if (!imageFile) {
+    // Si la cámara está activa, primero tomamos la foto
+    if (isCameraActive) {
+      capturePhoto();
+      // Le damos un pequeño retraso para que el state se actualice antes de enviar a Python
+      setTimeout(() => performAnalysis(), 300); 
+    } else {
+      performAnalysis();
+    }
+  };
+
+  const performAnalysis = async () => {
+    if (!imageFile && !isCameraActive) {
       setLogs(prev => [...prev, "[ERROR] No hay señal de imagen para procesar."]);
       return;
     }
@@ -61,16 +112,15 @@ export default function App() {
     setProgress(0);
     setLogs(prev => [...prev, "[ACCIÓN] Enviando tensor al motor ONNX local..."]);
 
-    // Animación de progreso mientras esperamos la respuesta de Python
     const interval = setInterval(() => {
       setProgress(p => (p < 85 ? p + Math.floor(Math.random() * 15) : p));
     }, 200);
 
     try {
       const formData = new FormData();
-      formData.append("image", imageFile);
+      formData.append("image", imageFile); 
 
-      // Llamamos a nuestro nuevo servidor Flask
+      // Petición al backend
       const response = await fetch("http://localhost:5000/api/evaluate", {
         method: "POST",
         body: formData
@@ -128,13 +178,23 @@ export default function App() {
               <span>Cargar Imagen</span>
             </button>
 
+            {/* NUEVO BOTÓN DE CÁMARA */}
+            <button 
+              onClick={toggleCamera}
+              disabled={isEvaluating}
+              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer border ${isCameraActive ? 'bg-red-950/50 border-red-800 text-red-400 hover:border-red-400' : 'bg-cyan-950/50 border-cyan-800 text-cyan-300 hover:border-cyan-400 hover:bg-cyan-900/80'}`}
+            >
+              {isCameraActive ? <XSquare className="w-5 h-5" /> : <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+              <span>{isCameraActive ? 'Apagar Escáner' : 'Activar Escáner'}</span>
+            </button>
+
             <button 
               onClick={handleEvaluate}
-              disabled={isEvaluating || !imageSrc}
-              className="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-cyan-950 border-2 border-cyan-700/50 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.3)] text-cyan-400 py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
+              disabled={isEvaluating || (!imageSrc && !isCameraActive)}
+              className="w-full flex items-center justify-center gap-2 bg-transparent hover:bg-cyan-950 border-2 border-cyan-700/50 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(34,211,238,0.3)] text-cyan-400 py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer mt-4"
             >
               <Cpu className={`w-5 h-5 ${isEvaluating ? 'animate-pulse text-cyan-200' : ''}`} />
-              <span>{isEvaluating ? 'Procesando...' : 'Evaluar Imagen'}</span>
+              <span>{isEvaluating ? 'Procesando...' : isCameraActive ? 'Fijar y Evaluar' : 'Evaluar Imagen'}</span>
             </button>
           </div>
 
@@ -158,31 +218,53 @@ export default function App() {
             </div>
           </header>
 
-          {/* CONTENEDOR DE LA IMAGEN */}
+          {/* CONTENEDOR DE LA IMAGEN / CÁMARA */}
           <div className="flex-1 min-h-[200px] bg-slate-900/80 border border-cyan-900/60 rounded-xl relative overflow-hidden flex items-center justify-center z-10 mb-6 backdrop-blur-sm group">
-            {imageSrc ? (
-              <>
-                <img 
-                  src={imageSrc} 
-                  alt="Target" 
-                  className={`max-w-full max-h-full object-contain z-10 transition-all duration-700 ${isEvaluating ? 'contrast-125 brightness-110 saturate-150' : ''}`}
-                />
-                {isEvaluating && (
-                  <div className="absolute top-0 left-0 w-full h-1 bg-cyan-400 shadow-[0_0_15px_#22d3ee] animate-[scan_2s_ease-in-out_infinite] z-20 opacity-70"></div>
-                )}
-                <div className="absolute inset-0 border-2 border-cyan-500/20 m-4 rounded pointer-events-none z-20">
-                  <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
-                  <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400"></div>
-                  <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400"></div>
-                  <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
-                </div>
-              </>
+            
+            {isCameraActive ? (
+              // VISTA DE LA CÁMARA
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                className="w-full h-full object-cover z-10 opacity-90"
+                videoConstraints={{ facingMode: "user" }}
+              />
+            ) : imageSrc ? (
+              // VISTA DE LA IMAGEN CARGADA O CAPTURADA
+              <img 
+                src={imageSrc} 
+                alt="Target" 
+                className={`max-w-full max-h-full object-contain z-10 transition-all duration-700 ${isEvaluating ? 'contrast-125 brightness-110 saturate-150' : ''}`}
+              />
             ) : (
+              // SIN SEÑAL
               <div className="flex flex-col items-center text-cyan-800">
                 <ImageIcon className="w-16 h-16 mb-4 opacity-50" />
                 <p className="font-mono tracking-widest text-sm">[ SIN SEÑAL DE VIDEO ]</p>
               </div>
             )}
+
+            {/* OVERLAYS SCI-FI */}
+            {isEvaluating && (
+              <div className="absolute top-0 left-0 w-full h-1 bg-cyan-400 shadow-[0_0_15px_#22d3ee] animate-[scan_2s_ease-in-out_infinite] z-20 opacity-70"></div>
+            )}
+            <div className="absolute inset-0 border-2 border-cyan-500/20 m-4 rounded pointer-events-none z-20">
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-cyan-400"></div>
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-cyan-400"></div>
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-cyan-400"></div>
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-cyan-400"></div>
+            </div>
+            
+            {/* CROSSHAIR SI LA CÁMARA ESTÁ ACTIVA */}
+            {isCameraActive && !isEvaluating && (
+               <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none opacity-40">
+                  <div className="w-16 h-16 border border-cyan-400 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  </div>
+               </div>
+            )}
+
           </div>
 
           {/* BARRA DE PROGRESO */}

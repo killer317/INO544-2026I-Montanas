@@ -72,7 +72,7 @@ PRUEBA DE EL MODELO EN LA TERMINAL
 ---<img width="1043" height="329" alt="pruebas en terminal" src="https://github.com/user-attachments/assets/85a9fbc3-9b59-4bcc-a326-e87418aa4bed" />
 PRIMER MODELO DE LA INTERFAZ 1.0V "ES UNA MONTAÑA" USANDO CUSTOMTKINTER
 <img width="1099" height="725" alt="modelo primera fase montaña" src="https://github.com/user-attachments/assets/ef6268ed-f1f6-4676-85e5-30be887b6107" />
-PRIMER MODELO DE LA INTERFAZ 1.0V "NO ES UNA MONTAÑA" CUSTOMTKINTER
+PRIMER MODELO DE LA INTERFAZ 1.0V "NO ES UNA MONTAÑA" USANDO CUSTOMTKINTER
 <img width="1094" height="727" alt="modelo primera fase no montaña" src="https://github.com/user-attachments/assets/10e854e3-cb54-4f03-a733-05a9bba1970e" />
 MODELO FINAL DE LA INTERFAZ 2.0V "ES UNA MONTAÑA" USANDO REACT
 <img width="1895" height="902" alt="montaña" src="https://github.com/user-attachments/assets/c1861117-a5b3-43d8-af6e-aea0ed588084" />

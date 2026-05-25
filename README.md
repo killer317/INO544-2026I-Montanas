@@ -49,11 +49,8 @@
     * *Tamaño de lote (Batch Size):* 32
 
 ### 💡 Justificación Crítica (Control de Autoría)
-*Explique detalladamente por qué el equipo eligió esa Tasa de Aprendizaje (Learning Rate) específica y el impacto que tuvo en las gráficas de pérdida durante el laboratorio:*
-> ### 💡 Justificación Crítica (Control de Autoría)
-*Explique detalladamente por qué el equipo eligió esa Tasa de Aprendizaje (Learning Rate) específica y el impacto que tuvo en las gráficas de pérdida durante el laboratorio:*
 
- Durante las pruebas iniciales en el laboratorio, estuvimos ajustando varios valores para evaluar cómo reaccionaba el modelo. Primero intentamos forzar un aprendizaje rápido con una tasa de "0.01", pero al observar la gráfica de pérdida, vimos que la curva rebotaba de forma errática; el modelo era demasiado agresivo, "saltaba" por encima de los mínimos y no lograba estabilizarse.
+ Durante las pruebas iniciales, estuvimos ajustando varios valores para evaluar cómo reaccionaba el modelo. Primero intentamos forzar un aprendizaje rápido con una tasa de "0.01", pero al observar la gráfica de pérdida, vimos que la curva rebotaba de forma errática; el modelo era demasiado agresivo, "saltaba" por encima de los mínimos y no lograba estabilizarse.
  
  Por otro lado, cuando probamos bajarla demasiado (a "0.0001"), la curva era muy estable, pero el aprendizaje se volvía desesperantemente lento y la red apenas mejoraba tras cada época, lo que no era viable para nuestros tiempos de prueba.
  

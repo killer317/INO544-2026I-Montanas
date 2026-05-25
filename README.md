@@ -67,6 +67,7 @@
 
 *(Inserte aquí abajo la captura de pantalla de la gráfica de entrenamiento Accuracy/Loss de su modelo)*
 ![Gráfica de Entrenamiento](src/grafica_rendimiento.png)
+
 prueba de el modelo en la terminal 
 ---<img width="1043" height="329" alt="pruebas en terminal" src="https://github.com/user-attachments/assets/85a9fbc3-9b59-4bcc-a326-e87418aa4bed" />
 primer modelo de la interfaz 1.0v ¨es una montaña¨

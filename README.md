@@ -77,6 +77,9 @@ MODELO FINAL DE LA INTERFAZ 2.0V "NO ES UNA MONTAÑA" USANDO REACT
 <img width="1895" height="897" alt="no montaña" src="https://github.com/user-attachments/assets/c3a5d0f1-ec11-401e-aa68-31f14214e550" />
 IMPLEMANTACIÓN DE LA CAMARA FUNCIONAL PARA LA INTERFAZ 2.0V USANDO REACT
 <img width="1907" height="923" alt="Screenshot_3" src="https://github.com/user-attachments/assets/b2546abb-c125-43f4-b438-eeaf39d20276" />
+CORRECIONES FINALES EN EL MODELO Y AL INTERFAZ 2.0V USANDO REACT
+<img width="1905" height="910" alt="Screenshot_2" src="https://github.com/user-attachments/assets/b88a9b78-6af1-4d0a-b34b-b0b15002932d" />
+
 
 
 

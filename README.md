@@ -39,7 +39,7 @@
 ---
 
 ## 🧠 3. Arquitectura del Modelo y Entrenamiento
-* Framework utilizado: TensorFlow / Keras
+* Framework utilizado: TensorFlow / Keras/ react
 * Descripción de la Red (CNN): Se diseñó una red neuronal convolucional (CNN) compuesta por 3 capas Conv2D (32, 64 y 128 filtros respectivamente) para la extracción de características visuales, cada una seguida de una capa MaxPooling2D para la reducción de dimensionalidad. Finalmente, una capa Flatten conecta con una capa densa oculta de 128 neuronas y una capa de salida de 1 neurona.
 * **Hiperparámetros óptimos seleccionados:**
     * *Función de pérdida (Loss):* Binary Crossentropy (ideal para clasificación binaria Montaña vs No Montaña).

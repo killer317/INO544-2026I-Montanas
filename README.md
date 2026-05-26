@@ -12,7 +12,7 @@
 * **Integrante 2:** Jesus Moco - 29804224
   * **Rol: responsable en el diseño de la arquitectura de la Red Neuronal (CNN), selección de la función de activación, ajuste de hiperparámetros (Learning Rate, Optimizador, Épocas) y ejecución del entrenamiento.
 
-* **Integrante 3:** Gilbert vera - 
+* **Integrante 3:** Gilbert vera - 29896518
   * **Rol: Responsabilidades Homologación del modelo, conversión estricta desde Keras al formato universal **ONNX v12**, y garantía de que los tensores de entrada/salida ([1, 224, 224, 3] y [1, 1]) cumplan con los estándares de la feria.
 
 * **Integrante 4:** Leonardo Garcia - 30594076

@@ -12,7 +12,7 @@
 * **Integrante 2:** Jesus Moco - 29804224
   * **Rol: responsable en el diseño de la arquitectura de la Red Neuronal (CNN), selección de la función de activación, ajuste de hiperparámetros (Learning Rate, Optimizador, Épocas) y ejecución del entrenamiento.
 
-* **Integrante 3:** Gilbert vera - 
+* **Integrante 3:** Gilbert vera - 29896518
   * **Rol: Responsabilidades Homologación del modelo, conversión estricta desde Keras al formato universal **ONNX v12**, y garantía de que los tensores de entrada/salida ([1, 224, 224, 3] y [1, 1]) cumplan con los estándares de la feria.
 
 * **Integrante 4:** Leonardo Garcia - 30594076
@@ -39,7 +39,7 @@
 ---
 
 ## 🧠 3. Arquitectura del Modelo y Entrenamiento
-* Framework utilizado: TensorFlow / Keras
+* Framework utilizado: TensorFlow / Keras/ react
 * Descripción de la Red (CNN): Se diseñó una red neuronal convolucional (CNN) compuesta por 3 capas Conv2D (32, 64 y 128 filtros respectivamente) para la extracción de características visuales, cada una seguida de una capa MaxPooling2D para la reducción de dimensionalidad. Finalmente, una capa Flatten conecta con una capa densa oculta de 128 neuronas y una capa de salida de 1 neurona.
 * **Hiperparámetros óptimos seleccionados:**
     * *Función de pérdida (Loss):* Binary Crossentropy (ideal para clasificación binaria Montaña vs No Montaña).
@@ -77,6 +77,9 @@ MODELO FINAL DE LA INTERFAZ 2.0V "NO ES UNA MONTAÑA" USANDO REACT
 <img width="1895" height="897" alt="no montaña" src="https://github.com/user-attachments/assets/c3a5d0f1-ec11-401e-aa68-31f14214e550" />
 IMPLEMANTACIÓN DE LA CAMARA FUNCIONAL PARA LA INTERFAZ 2.0V USANDO REACT
 <img width="1907" height="923" alt="Screenshot_3" src="https://github.com/user-attachments/assets/b2546abb-c125-43f4-b438-eeaf39d20276" />
+CORRECCIONES FINALES EN EL MODELO Y AL INTERFAZ 2.0V USANDO REACT
+<img width="1905" height="910" alt="Screenshot_2" src="https://github.com/user-attachments/assets/b88a9b78-6af1-4d0a-b34b-b0b15002932d" />
+
 
 
 

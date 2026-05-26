@@ -38,14 +38,21 @@ print("✅ El dataset funciona perfectamente y entrega el formato correcto.")
 print("\n--- 2. CONSTRUYENDO LA CNN ---")
 input_tensor = layers.Input(shape=(224, 224, 3), name="cam_input", dtype=tf.float32)
 
-x = layers.Conv2D(32, (3, 3), activation='relu')(input_tensor)
-x = layers.MaxPooling2D((2, 2))(x)
-x = layers.Conv2D(64, (3, 3), activation='relu')(x)
-x = layers.MaxPooling2D((2, 2))(x)
-x = layers.Conv2D(128, (3, 3), activation='relu')(x)
-x = layers.MaxPooling2D((2, 2))(x)
-x = layers.Flatten()(x)
+# Ajuste de escala: El generador entrega [0, 1], MobileNetV2 espera [-1, 1].
+x = layers.Rescaling(scale=2.0, offset=-1.0)(input_tensor)
+
+# MobileNetV2
+base_model = tf.keras.applications.MobileNetV2(
+    input_shape=(224, 224, 3),
+    include_top=False,
+    weights='imagenet'
+)
+base_model.trainable = False
+
+x = base_model(x, training=False)
+x = layers.GlobalAveragePooling2D()(x)
 x = layers.Dense(128, activation='relu')(x)
+x = layers.Dropout(0.5)(x)
 
 # Salida Binaria [1, 1]
 output_tensor = layers.Dense(1, activation='sigmoid', name="confidence_score")(x)
@@ -56,4 +63,3 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 # Mostrar la tabla de la arquitectura
 model.summary()
 print("\n✅ La arquitectura CNN compiló correctamente. ¡Listo para entrenar!")
-
